@@ -9,7 +9,7 @@ public class PremiumCoffeeMachine implements CoffeeMachine {
 	private String [] lucks = {
 			"If at first you don't succeed call it version 1.0.",
 			"Today you will make magic happen!",
-			"Have you tried turning it off and on again",
+			"Have you tried turning it off and on again?",
 			"Life would be much more easier if you had the source code."
 	};
 	private int luckCounter=0;
@@ -24,7 +24,7 @@ public class PremiumCoffeeMachine implements CoffeeMachine {
 		this.autoRefill=autoRefill;
 	}
 	
-	
+	@Override
 	public Product brew(Beverage beverage, int quantity) {
 		if(quantity<=0 || quantity>3)
 			return null;

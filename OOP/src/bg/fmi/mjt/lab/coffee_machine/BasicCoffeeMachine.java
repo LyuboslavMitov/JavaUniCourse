@@ -22,6 +22,7 @@ public class BasicCoffeeMachine implements CoffeeMachine {
 			return new Product(beverage.getName(), 1 , null);
 		return null;
 	}
+	@Override
 	public Product brew(Beverage beverage,int q) {
 		return null;
 	}
