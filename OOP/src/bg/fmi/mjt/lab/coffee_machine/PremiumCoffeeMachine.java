@@ -6,7 +6,7 @@ import bg.fmi.mjt.lab.coffee_machine.supplies.Beverage;
 
 public class PremiumCoffeeMachine implements CoffeeMachine {
 	
-	String [] lucks = {
+	private String [] lucks = {
 			"If at first you don't succeed call it version 1.0.",
 			"Today you will make magic happen!",
 			"Have you tried turning it off and on again",
