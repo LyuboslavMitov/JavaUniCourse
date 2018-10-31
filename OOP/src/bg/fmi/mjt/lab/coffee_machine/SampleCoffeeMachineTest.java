@@ -4,8 +4,11 @@ package bg.fmi.mjt.lab.coffee_machine;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +36,7 @@ public class SampleCoffeeMachineTest {
 	private static final double ESPRESSO_COFFEE = 10;
 	private static final double ESPRESSO_WATER = 30;
 
+	private static List<String> lucks= new ArrayList<>();
 	private CoffeeMachine basicMachine;
 	private CoffeeMachine premiumMachine;
 
@@ -40,6 +44,10 @@ public class SampleCoffeeMachineTest {
 	public void setUp() {
 		basicMachine = new BasicCoffeeMachine();
 		premiumMachine = new PremiumCoffeeMachine();
+		lucks.add("If at first you don't succeed call it version 1.0.");
+		lucks.add("Today you will make magic happen!");
+		lucks.add("Have you tried turning it off and on again");
+		lucks.add("Life would be much more easier if you had the source code.");
 	}
 
 	@Test
@@ -107,11 +115,24 @@ public class SampleCoffeeMachineTest {
 		String actual6 = m2.brew(new Espresso()).getLuck();
 		assertEquals("If at first you don't succeed call it version 1.0.", actual);
 		assertEquals("Today you will make magic happen!", actual2);
-		assertEquals("Have you tried turning it off and on again", actual3);
+		assertEquals("Have you tried turning it off and on again?", actual3);
 		assertEquals("Life would be much more easier if you had the source code.", actual4);
 		assertEquals("If at first you don't succeed call it version 1.0.", actual5);
 		assertNull(actual6);
 	}
+	@Test
+	public void testIfLuckListIsCircular() {
+		CoffeeMachine premiumMachine = new PremiumCoffeeMachine(true);
+		
+		for (int i = 0; i < lucks.size(); i++) {
+			Product product = premiumMachine.brew(new Espresso());
+			assertTrue(lucks.contains(product.getLuck()));
+		}
+		String currentLuck = premiumMachine.brew(new Espresso()).getLuck();
+		assertEquals(lucks.get(0), currentLuck);
+	}
+	
+	
 	@Test
 	public void testBasicContainer() {
 		Container  c= new BasicContainer();
