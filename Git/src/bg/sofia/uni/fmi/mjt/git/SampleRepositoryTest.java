@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDateTime;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,11 +18,41 @@ public class SampleRepositoryTest {
 	public void setUp() {
 		repo = new Repository();
 	}
+	
+	@Test
+	public void testDateFormatter() {
+		LocalDateTime d = LocalDateTime.of(2018, 10, 25, 11, 13);
+		String actual = GitUtil.formatDate(d);
+		assertEquals("Thu Oct 25 11:13 2018", actual);
+	}
+	@Test
+	public void testLogMultipl() {
+		repo.add("foo.txt");
+		repo.commit("First commit");
 
+		repo.add("bar.txt");
+		repo.commit("Second commit");
+
+		Result result = repo.log();
+		System.out.println(result.getMessage());
+	}
+	@Test
+	public void testRemoveSingleFileFromStagingArea() {
+		repo.add("foo.txt", "bar.txt");
+		Result actual = repo.remove("foo.txt");
+		assertSuccess("added foo.txt for removal", actual);
+	}
 	@Test
 	public void testAdd_MultipleFiles() {
 		Result actual = repo.add("foo.txt", "bar.txt", "baz.txt");
 		assertSuccess("added foo.txt, bar.txt, baz.txt to stage", actual);
+	}
+	@Test
+	public void testAdd_MultipleFilesWithExisting() {
+		repo.add("foo.txt");
+		repo.commit("init");
+		Result actual = repo.add("foo.txt", "bar.txt", "baz.txt");
+		assertFail("'foo.txt' already exists", actual);
 	}
 	@Test
 	public void testCommit() {
