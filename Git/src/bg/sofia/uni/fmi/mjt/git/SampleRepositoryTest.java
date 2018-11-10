@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.git;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
@@ -88,7 +89,33 @@ public class SampleRepositoryTest {
 		assertSuccess("switched to branch master", actual);
 		assertEquals("Add Main.java", repo.getHead().getMessage());
 	}
-
+	@Test
+	public void testRemoveSingle() {
+		repo.add("src/Main.java");
+		repo.remove("src/Main.java");
+		Result r = repo.commit("smh");
+		repo.add("src/m");
+		repo.add("asdf");
+		repo.remove("src/m");
+		Result r2 = repo.commit("snh");
+		assertFail("nothing to commit, working tree clean",r);
+		assertSuccess("1 files changed", r2);
+	}
+	@Test
+	public void testCheckoutCommit() {
+		repo.add("asdf");
+		repo.commit("asdfdd");
+		String hash = repo.getHead().getHash();
+		repo.add("zdr");
+		repo.commit("petko");
+		String hash2 = repo.getHead().getHash();
+		assertNotEquals(hash, hash2);
+		repo.checkoutCommit(hash);
+		assertNotEquals(repo.getHead().getHash(),hash2);
+		assertEquals(repo.getHead().getHash(),hash);
+		Result r = repo.checkoutCommit(hash2);
+		assertFail("commit "+hash2+" does not exist", r);
+	}
 	private static void assertFail(String expected, Result actual) {
 		assertFalse(actual.isSuccessful());
 		assertEquals(expected, actual.getMessage());

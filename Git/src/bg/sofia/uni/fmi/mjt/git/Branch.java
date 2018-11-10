@@ -1,7 +1,6 @@
 package bg.sofia.uni.fmi.mjt.git;
 
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,13 +16,13 @@ public class Branch {
 	public Branch() {
 		name="master";
 	}
-	//copy branchFiles too
 	public Branch(String branchName, List<Commit> commits,Set<String> branchFiles) {
 		this.name=branchName;
 		this.commits=new ArrayList<>(commits);
 		this.branchFiles= new HashSet<>(branchFiles);
 		
 	}
+	
 	public Result stageFiles(List<String> listOfFiles) {
 		
 			StringBuilder message =new StringBuilder();
@@ -57,9 +56,12 @@ public class Branch {
 		StringBuilder message =new StringBuilder();
 		String unsuccessfulFile = atomicRemove(listOfFiles);
 		if(unsuccessfulFile==null) {
+			//with + size they the staged files are added to the changedFiles but that does not count so 
+			//
+			changedFiles=(changedFiles+listOfFiles.size())-howManyFilesNotCommited(listOfFiles)*2;
+			
 			stagedFiles.removeAll(listOfFiles);
 			branchFiles.removeAll(listOfFiles);
-			changedFiles+=listOfFiles.size();
 			
 			message.append("added ")
 				   .append(String.join(", ",listOfFiles))
@@ -93,6 +95,18 @@ public class Branch {
 		commits.add(newCommit);
 		branchFiles.addAll(stagedFiles);
 	}
+	public boolean checkoutCommit(String hash) {
+		int index = 0;
+		for (Commit com: commits) {
+			if(com.getHash().equals(hash)) {
+				commits.subList(index+1,commits.size()).clear();;	
+				return true;
+			}
+			index++;
+		}
+		return false;
+		
+	}
 	
 	@Override
 	public int hashCode() {
@@ -124,6 +138,27 @@ public class Branch {
 		return true;
 	}
 	
+	public Result log() {
+		StringBuilder message = new StringBuilder();
+		if(commits.isEmpty()) {
+			message.append("branch ").append(name).append(" does not have any commits yet");
+			return new Result(false,message.toString());
+		}
+		ListIterator<Commit> it = commits.listIterator(commits.size());
+		Commit commit;
+		while(it.hasPrevious()){
+			commit = it.previous();
+			message.append("commit ").append(commit.getHash()).append("\n")
+			.append("Date: ").append(GitUtil.formatDate(commit.getDate())).append("\n\n\t")
+			.append(commit.getMessage());
+			if(it.hasPrevious())
+				message.append("\n\n");
+			
+		}
+		
+		return new Result(true, message.toString());
+	}
+	
 	private String atomicRemove(List<String> files) {
 		for (String file : files) {
 			if(!stagedFiles.contains(file) && !branchFiles.contains(file))
@@ -138,26 +173,16 @@ public class Branch {
 		}
 		return null;
 	}
-	public Result log() {
-		StringBuilder message = new StringBuilder();
-		if(commits.isEmpty()) {
-			message.append("branch ").append(name).append(" does not have any commits yet");
-			return new Result(false,message.toString());
+	private int howManyFilesNotCommited(List<String> files) {
+		int result=0;
+		for(String file: files) {
+			if(stagedFiles.contains(file)) {
+				result++;
+			}
 		}
-		ListIterator<Commit> it = commits.listIterator(commits.size());
-		Commit commit;
-		while(it.hasPrevious()){
-			 commit = it.previous();
-			 message.append("commit ").append(commit.getHash()).append("\n")
-					.append("Date: ").append(GitUtil.formatDate(commit.getDate())).append("\n\n\t")
-					.append(commit.getMessage());
-					if(it.hasPrevious())
-						message.append("\n\n");
-			 		
-		}
-		
-		return new Result(true, message.toString());
+		return result;
 	}
+
 }
 
 

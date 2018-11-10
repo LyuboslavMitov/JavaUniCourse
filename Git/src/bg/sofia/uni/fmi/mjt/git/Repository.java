@@ -86,7 +86,13 @@ public class Repository {
 	}
 	
 	public Result checkoutCommit(String hash) {
-		return null;
+		StringBuilder message = new StringBuilder();
+		if(activeBranch.checkoutCommit(hash)) {
+			message.append("HEAD is now at ").append(hash);
+			return new Result(true,message.toString());
+		}
+		message.append("commit ").append(hash).append(" does not exist");
+		return new Result(false, message.toString());
 	}
 	
 }
