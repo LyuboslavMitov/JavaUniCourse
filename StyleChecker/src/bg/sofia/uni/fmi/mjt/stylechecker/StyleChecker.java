@@ -1,9 +1,8 @@
 package bg.sofia.uni.fmi.mjt.stylechecker;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,9 +24,7 @@ import java.util.Properties;
  * </ul>
  */
 public class StyleChecker {
-	private static final String FIXME_OPENING_BRACKETS_SHOULD_BE_PLACED_ON_THE_SAME_LINE_AS_THE_DECLARATION = "// FIXME Opening brackets should be placed on the same line as the declaration";
-	private static final String FIXME_ONLY_ONE_STATEMENT_PER_LINE_IS_ALLOWED = "// FIXME Only one statement per line is allowed";
-	private static final String FIXME_WILDCARDS_ARE_NOT_ALLOWED_IN_IMPORT_STATEMENTS = "// FIXME Wildcards are not allowed in import statements";
+	private static final int DEFAULT_LINE_LENGTH = 100;
 	private boolean wildcard;
 	private boolean statements;
 	private boolean brackets;
@@ -49,7 +46,7 @@ public class StyleChecker {
 		statements = true;
 		brackets = true;
 		lineCheck = true;
-		lineLength = 100;
+		lineLength = DEFAULT_LINE_LENGTH;
 	}
 
 	/**
@@ -69,7 +66,8 @@ public class StyleChecker {
 		}
 		wildcard = Boolean.parseBoolean(prop.getProperty("wildcard.import.check.active", "true"));
 		brackets = Boolean.parseBoolean(prop.getProperty("opening.bracket.check.active", "true"));
-		statements = Boolean.parseBoolean(prop.getProperty("statements.per.line.check.active", "true"));
+		statements = Boolean
+				.parseBoolean(prop.getProperty("statements.per.line.check.active", "true"));
 		lineCheck = Boolean.parseBoolean(prop.getProperty("length.of.line.check.active", "true"));
 		if (lineCheck) {
 			lineLength = Integer.parseInt(prop.getProperty("line.length.limit", "100"));
@@ -107,17 +105,19 @@ public class StyleChecker {
 		StringBuilder comments = new StringBuilder();
 
 		if (wildcard && !checkImportForWildcard(line)) {
-			comments.append(FIXME_WILDCARDS_ARE_NOT_ALLOWED_IN_IMPORT_STATEMENTS).append("\n");
+			comments.append("// FIXME Wildcards are not allowed in import statements").append("\n");
 		}
 		if (statements && !checkStatementsCounter(line)) {
-			comments.append(FIXME_ONLY_ONE_STATEMENT_PER_LINE_IS_ALLOWED).append("\n");
+			comments.append("// FIXME Only one statement per line is allowed").append("\n");
 		}
 		if (lineCheck && !checkLineLength(line, lineLength)) {
-			comments.append("// FIXME Length of line should not exceed [").append(lineLength).append("] characters")
-					.append("\n");
+			comments.append("// FIXME Length of line should not exceed ").append(lineLength)
+					.append(" characters").append("\n");
 		}
 		if (brackets && !checkOpeningBracket(line)) {
-			comments.append(FIXME_OPENING_BRACKETS_SHOULD_BE_PLACED_ON_THE_SAME_LINE_AS_THE_DECLARATION).append("\n");
+			comments.append(
+					"// FIXME Opening brackets should be placed on the same line as the declaration")
+					.append("\n");
 		}
 		return comments.toString();
 	}
@@ -126,6 +126,9 @@ public class StyleChecker {
 	private static boolean checkStatementsCounter(String line) {
 		line = line.trim();
 		int firstDelimIndex = line.indexOf(";");
+		if (firstDelimIndex == -1) {
+			return true;
+		}
 		for (char character : line.substring(firstDelimIndex, line.length()).toCharArray()) {
 			if (character != ';' && character != ' ') {
 				return false;
