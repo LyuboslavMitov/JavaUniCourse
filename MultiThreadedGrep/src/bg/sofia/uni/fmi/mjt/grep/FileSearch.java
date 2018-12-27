@@ -12,7 +12,7 @@ public class FileSearch implements Callable<String> {
 	private File file = null;
 	private Grep grep;
 
-	public FileSearch(Path file, Grep grep) { // more parameters, maybe the Grep object
+	public FileSearch(Path file, Grep grep) {
 		if (file.toFile().exists()) {
 			this.file = file.toFile();
 		}

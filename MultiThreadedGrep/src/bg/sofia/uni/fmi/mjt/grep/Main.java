@@ -28,14 +28,24 @@ public class Main {
 		if (grep != null) {
 			try (Stream<Path> paths = Files.walk(Paths.get(grep.getPathToDirectoryTree()))) {
 				paths.filter(Files::isRegularFile).forEach(f -> files.add(f));
+			} catch (Exception ex) {
+				System.out.println("Invalid initial directory");
 			}
-			files.stream().forEach(System.out::println);
+			if (grep.getNumberOfThreads() <= 0) {
+				return;
+			}
 			ExecutorService es = Executors.newFixedThreadPool(grep.getNumberOfThreads());
-			Future<String> a = es.submit(new FileSearch(files.get(0), grep));
-			Thread.sleep(2000);
-			System.out.println(a.get());
+			List<Future<String>> result = new ArrayList<>();
 
+			files.stream().forEach(f -> result.add(es.submit(new FileSearch(f, grep))));
+			while (result.stream().filter(f -> !f.isDone()).count() > 0) {
+			}
+			for (Future<String> fs : result) {
+				System.out.print(fs.get());
+			}
+			es.shutdown();
 		}
+		System.out.println("debuging");
 	}
 
 	private static Grep parseCommand(String commandLine) {
@@ -74,7 +84,6 @@ public class Main {
 			System.out.println("Number of threads parameter should be an integer!!");
 		}
 		if (commandArgs.length - 1 > optionals) {
-			System.out.println(optionals);
 			outputFile = commandArgs[optionals];
 		}
 		return new Grep(wordFlag, caseFlag, stringToFind, pathToDirectoryTree, numberOfThreads,
